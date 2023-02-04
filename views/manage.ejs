@@ -1,0 +1,16 @@
+<%- include('partials/header') %>
+    <div class="box" id="manage-heading">
+        <h1><b>Post Management</b></h1>
+    </div>
+    <div class="box">
+        <form action="/delete" method="post" >               
+            <% titleAndPost.forEach(function(item){ %>
+                <div class="item">
+                    <input type="checkbox" name="checkbox" value="<%=item._id%>">
+                    <h1><b><%= item.title %></b>         
+                </div>              
+            <% }) %>
+            <button type="submit" id="manage-btn" class="btn btn-primary btn-lg btn-block">Delete</button>    
+        </form>
+    </div>
+<%- include('partials/footer') %>

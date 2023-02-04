@@ -1,0 +1,16 @@
+<%- include('partials/header') %>
+    
+    <h1><b>Home</b></h1>
+    <%= homePageIntro %>
+    <% titleAndPost.forEach(function(item){ %>
+            <div class="content">
+                <a href="/post/"></a><h1><b><%= item.title %></b></h1>
+                <p><%= item.post.substring(0, 100) + '...' %></p>
+                <a href="/post/<%= item._id %>"><i class="fa-brands fa-readme fa-2x"></i></a>
+                <input type="hidden" name="postId" value="<%= item._id %>"></p>
+            </div>
+                       
+    <% }) %>  
+    <a href="/compose" ><button type="submit" id="compose-btn" class="btn btn-primary btn-lg btn-block">Compose</button></a>
+
+<%- include('partials/footer') %>
