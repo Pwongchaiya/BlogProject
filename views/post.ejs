@@ -1,4 +1,5 @@
 <%- include('partials/header') %>
     <h1><b><%= postAndTitle.title %></b></h1>
-    <p><%= postAndTitle.post %></p>    
+    <p><%= postAndTitle.post %></p>
+    <a href="/update/<%=postAndTitle._id%>"><button type="submit" class="btn btn-primary">Revise Post</button></a>
 <%- include('partials/footer') %>

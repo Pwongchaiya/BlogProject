@@ -12,10 +12,8 @@ mongoose.connect("mongodb://127.0.0.1:27017/blog-post")
 const app = express()
 
 const postSchema = mongoose.Schema({
-
   title: String,
   post: String
-
 })
 const Post = mongoose.model("Post", postSchema)
 
@@ -24,108 +22,47 @@ app.use(bodyParser.urlencoded({extended: true}))
 app.use(express.static("public"))
 app.use(express.static("partials"))
 
+//-----------get-request-----------\\
+app.get("/", function (req, res) { findAllPostAndRender(res, "home") })
 
-app.get("/", function (req, res) {
-  
+app.get("/about", function (req, res) { res.render("about", { a: aboutContent }) })
+
+app.get("/contact", function (req, res) { res.render("contact", { c:contactContent })})
+
+app.get("/compose", function (req, res) { res.render("compose") })
+
+app.get("/post/:postId", function (req, res) { getPostByIdAndRender(res, req.params.postId, "post") });
+
+app.get("/blog-management", function (req, res) { findAllPostAndRender(res, "manage") })
+
+app.get("/update/:postId",function (req, res) { getPostByIdAndRender(res, req.params.postId, "update") })
+
+//-----------post-request-----------\\
+app.post("/update/:postId", function (req,res) { updatePostById(res, req.params.postId, req.body.post) })
+
+app.post("/compose", function (req, res) { savePost(res, req.body.title, req.body.post) })
+
+app.post("/delete", function (req, res) { findPostByIdAndDelete(res, req.body.checkbox) })
+
+//-----------port-listen-----------\\
+app.listen(3000, function() { console.log("Server started on port 3000"); });
+
+
+//---------------fuctions---------------\\
+function findAllPostAndRender(res, view){
   Post.find({}, function (err, foundItem) { 
     if(err){
       console.log(err)
     }else{
-      res.render("home", {
+      res.render(view, {
         homePageIntro: homeStartingContent,
         titleAndPost: foundItem
       });
     }
    })
-
-})
-
-app.get("/about", function (req, res) { 
-
-  res.render("about", {
-    a: aboutContent
-   })
-
-})
-
-app.get("/contact", function (req, res) { 
-
-  res.render("contact", { 
-    c:contactContent
-  })
-
-})
-
-app.get("/compose", function (req, res) {
-
-  res.render("compose")
-
-})
-
-app.get("/post/:postId", function (req, res) {
-  
-  Post.findOne({_id:req.params.postId}, function (err, foundItem) { 
-    if(!foundItem){
-      res.redirect("/compose")
-      console.log("No post was found with that name")
-    }else{
-      res.render("post",{
-        postAndTitle: foundItem
-      })
-      console.log("Successfully retreived post: " + foundItem.title)
-    }
-   })
-  
- });
-
-app.get("/blog-management", function (req, res) {
-
-  Post.find({}, function (err, foundItem) { 
-    if(err){
-      console.log(err);
-    }else{
-      res.render("manage", {
-        titleAndPost: foundItem
-      });
-    }
-  })
-
-})
-
-app.post("/compose", function (req, res) { 
-
-  new Post({
-    title: req.body.title,
-    post: req.body.post
-  }).save();
-
-  console.log("Succesfully created a post")
-  res.redirect("/")
-
- })
-
-app.post("/delete", function (req, res) { 
-
-  const ids = req.body.checkbox
-
-  if(Array.isArray(ids)){
-    ids.forEach(id => {deletePost(id)})
-  }else if(ids !== undefined){
-    deletePost(ids)
-  }
-
-  res.redirect("/blog-management")
-
- })
-
-app.listen(3000, function() {
-
-  console.log("Server started on port 3000");
-
-});
+}
 
 function deletePost(post){
-
   Post.findByIdAndDelete(post, function (err) { 
     if(err){
       console.log(err)
@@ -133,5 +70,48 @@ function deletePost(post){
       console.log(post + " has been successfully deleted.")
     }
    })
+}
 
+function findPostByIdAndDelete(res, ids){
+  if(Array.isArray(ids)){
+    ids.forEach(id => {deletePost(id)})
+  }else if(ids !== undefined){
+    deletePost(ids)
+  }
+  res.redirect("/blog-management")
+}
+
+function getPostByIdAndRender(res, id, view){
+  Post.findById(id, function (err, foundItem) { 
+    if(!foundItem){
+      res.redirect("/compose")
+      console.log("No post was found with that name")
+    }else{
+      res.render(view,{
+        postAndTitle: foundItem
+      })
+      console.log("Successfully retreived post: " + foundItem.title)
+    }
+   })
+}
+
+function updatePostById(res, id, currentPost){
+  Post.findByIdAndUpdate(id, {post: currentPost}, function (err, foundItem) { 
+    if(err){
+      console.log(err)
+    }else{
+      console.log("post has successfully been updated to " + currentPost )
+      res.redirect("/post/"+ id)
+    }
+   })
+}
+
+function savePost(res, workingTitle, workingPost){
+  new Post({
+    title: workingTitle,
+    post: workingPost
+  }).save();
+
+  console.log("Succesfully created a post")
+  res.redirect("/")
 }
